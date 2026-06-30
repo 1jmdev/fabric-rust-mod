@@ -1,0 +1,86 @@
+plugins {
+    id "net.fabricmc.fabric-loom-remap" version "${loom_version}"
+    id "maven-publish"
+}
+
+version = project.mod_version
+group = project.maven_group
+
+base {
+    archivesName = project.archives_base_name
+}
+
+java {
+    withSourcesJar()
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.release = 21
+}
+
+loom {
+    runs {
+        configureEach {
+            vmArg "--enable-native-access=ALL-UNNAMED"
+        }
+    }
+}
+
+dependencies {
+    minecraft "com.mojang:minecraft:${minecraft_version}"
+    mappings loom.officialMojangMappings()
+    modImplementation "net.fabricmc:fabric-loader:${loader_version}"
+}
+
+def detectOs() {
+    def os = System.getProperty("os.name").toLowerCase(Locale.ROOT)
+
+    if (os.contains("win")) return "windows"
+    if (os.contains("mac")) return "macos"
+    if (os.contains("linux")) return "linux"
+
+    throw new GradleException("Unsupported OS: " + os)
+}
+
+def detectArch() {
+    def arch = System.getProperty("os.arch").toLowerCase(Locale.ROOT)
+
+    if (arch == "amd64" || arch == "x86_64") return "x86_64"
+    if (arch == "aarch64" || arch == "arm64") return "aarch64"
+
+    throw new GradleException("Unsupported architecture: " + arch)
+}
+
+def nativePlatform = "${detectOs()}-${detectArch()}"
+def nativeLibraryName = System.mapLibraryName("rucraft_native")
+def rustReleaseDir = layout.projectDirectory.dir("target/release")
+
+tasks.register("buildNative", Exec) {
+    workingDir = projectDir
+    commandLine "cargo", "build", "--release", "-p", "rucraft-native"
+
+    inputs.file("Cargo.toml")
+    inputs.file("Cargo.lock")
+    inputs.dir("crates")
+    outputs.file(rustReleaseDir.file(nativeLibraryName))
+}
+
+processResources {
+    dependsOn tasks.named("buildNative")
+
+    inputs.property "version", project.version
+    inputs.property "minecraft_version", project.minecraft_version
+    inputs.property "loader_version", project.loader_version
+
+    filesMatching("fabric.mod.json") {
+        expand(
+                version: project.version,
+                minecraft_version: project.minecraft_version,
+                loader_version: project.loader_version
+        )
+    }
+
+    from(rustReleaseDir.file(nativeLibraryName)) {
+        into "natives/${nativePlatform}"
+    }
+}

@@ -1,0 +1,22 @@
+# Rust
+target/
+**/target/
+
+# Java / Gradle
+.gradle/
+build/
+run/
+**/build/
+out/
+*.class
+*.jar
+!gradle/wrapper/gradle-wrapper.jar
+*.war
+*.ear
+
+# IDE / OS
+.idea/
+*.iml
+.DS_Store
+hs_err_pid*
+replay_pid*

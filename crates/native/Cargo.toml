@@ -1,0 +1,17 @@
+[package]
+name = "rucraft-native"
+version.workspace = true
+edition.workspace = true
+build = "build.rs"
+
+[lib]
+name = "rucraft_native"
+crate-type = ["cdylib"]
+
+[dependencies]
+jni.workspace = true
+
+[build-dependencies]
+proc-macro2.workspace = true
+quote.workspace = true
+syn.workspace = true

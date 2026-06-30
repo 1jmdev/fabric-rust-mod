@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "id": "rucraft",
+  "version": "${version}",
+  "name": "Rucraft",
+  "description": "Fabric mod with a tiny Java layer and a Rust native core.",
+  "authors": [
+    "1jmdev"
+  ],
+  "license": "MIT",
+  "environment": "*",
+  "entrypoints": {
+    "main": [
+      "com.rucraft.RucraftMod"
+    ]
+  },
+  "depends": {
+    "fabricloader": ">=${loader_version}",
+    "minecraft": "${minecraft_version}",
+    "java": ">=21"
+  }
+}
